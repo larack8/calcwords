@@ -20,7 +20,9 @@ public class WordsManager {
 	// 要处理的文件
 	private String fromFilePath = null;
 
-	private String resultPath;
+	private String resultFilePath;
+
+	private String fromFileFormat = null;
 
 	// 线程数
 	private int threadNum;
@@ -40,9 +42,14 @@ public class WordsManager {
 	private String showParten = null;
 
 	/**
-	 * 单词正则
+	 * 英文字符（不管前后空格）
 	 */
-	public static final String PARTEN_WORDS = "^\\.[a-zA-Z']+";
+	public static final String PARTEN_LETTER = "[a-zA-Z]+";
+
+	/**
+	 * 单词正则（前后空格）
+	 */
+	public static final String PARTEN_WORDS = "[^a-zA-Z']+";
 
 	/**
 	 * WXSS样式正则
@@ -53,16 +60,37 @@ public class WordsManager {
 	 * 
 	 * @param fromFilePath
 	 * @param resultPath
-	 * @param macthParten
-	 *            匹配正则表达式
+	 * @param searchParten
 	 */
-	public WordsManager(String fromFilePath, String resultPath, String searchParten)// 构造函数：文件，线程数，文件分割大小
-	{
-		this(fromFilePath, resultPath, searchParten, 4, 1024 * 1024 * 10);
+	public WordsManager(String fromFilePath, String resultPath, String searchParten) {
+		this(fromFilePath, null, resultPath, searchParten, null);
 	}
 
-	public WordsManager(String fromFilePath, String resultPath, String searchParten, int threadNum, long splitSize)// 构造函数：文件，线程数，文件分割大小
-	{
+	/**
+	 * 
+	 * @param fromFilePath
+	 * @param fromFileFormat
+	 * @param resultPath
+	 * @param searchParten
+	 * @param showParten
+	 */
+	public WordsManager(String fromFilePath, String fromFileFormat, String resultPath, String searchParten,
+			String showParten) {
+		this(fromFilePath, fromFileFormat, resultPath, searchParten, showParten, 4, 1024 * 1024 * 10);
+	}
+
+	/**
+	 * 
+	 * @param fromFilePath   读取文件路径
+	 * @param fromFileFormat 要查的文件格式
+	 * @param resultPath     结果保存路径
+	 * @param searchParten   搜索正则表达式
+	 * @param showParten     显示结果正则表达式
+	 * @param threadNum      线程数
+	 * @param splitSize      文件分割大小
+	 */
+	public WordsManager(String fromFilePath, String fromFileFormat, String resultFilePath, String searchParten,
+			String showParten, int threadNum, long splitSize) {
 		// 确定线程数最小是1个
 		if (threadNum < 1)
 			threadNum = 1;
@@ -77,8 +105,9 @@ public class WordsManager {
 			splitSize = 1024 * 1024 * 10;
 
 		this.fromFilePath = fromFilePath;
-		this.resultPath = resultPath;
+		this.resultFilePath = resultFilePath;
 		this.searchParten = searchParten;
+		this.showParten = showParten;
 		this.threadNum = threadNum;
 		this.splitSize = splitSize;
 		this.currentPos = 0;
@@ -88,7 +117,7 @@ public class WordsManager {
 		System.out.println(
 				">>> 1.初始化: searchParten=" + searchParten + ", threadNum=" + threadNum + ", splitSize=" + splitSize);
 
-		File fileText = new File(resultPath);
+		File fileText = new File(this.resultFilePath);
 		if (fileText.exists()) {
 			fileText.delete();
 		}
@@ -115,7 +144,11 @@ public class WordsManager {
 				if (f.isDirectory()) {
 					calc(f);
 				}
-				if (f.isFile()) {
+				if (null != fromFileFormat && f.getAbsolutePath().endsWith(fromFileFormat)) {
+					if (f.isFile()) {
+						doFile(f);
+					}
+				} else if (f.isFile()) {
 					doFile(f);
 				}
 			}
@@ -151,13 +184,14 @@ public class WordsManager {
 							offset++;
 						}
 
-						calcWordsThread = new CalcWordsThread(file, currentPos, splitSize + offset, searchParten);
+						calcWordsThread = new CalcWordsThread(file, currentPos, splitSize + offset, searchParten,
+								showParten);
 						currentPos += splitSize + offset;
 
 						raf.close();
 					} else {
 						calcWordsThread = new CalcWordsThread(file, currentPos, file.length() - currentPos,
-								searchParten);
+								searchParten, showParten);
 						currentPos = file.length();
 					}
 
@@ -187,7 +221,7 @@ public class WordsManager {
 	}
 
 	private void saveResult() {
-		System.out.println(">>> 3.正在保存结果到文件:" + resultPath);
+		System.out.println(">>> 3.正在保存结果到文件:" + resultFilePath);
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
 			// 使用TreeMap保证结果有序（按首字母排序）
@@ -221,7 +255,7 @@ public class WordsManager {
 				String key = (String) iterator.next();
 				String calcResult = "样式:" + key + " 出现次数:" + tMap.get(key) + "\n";
 				System.out.print(calcResult);
-				TextToFile(resultPath, calcResult);
+				TextToFile(resultFilePath, calcResult);
 			}
 			return;
 		}).start();

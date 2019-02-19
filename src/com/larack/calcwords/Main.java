@@ -1,8 +1,6 @@
 package com.larack.calcwords;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 
@@ -14,16 +12,19 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 
 		testCalcWords();
-		// test();
 	}
 
 	public static void testCalcWords() throws IOException {
 
-		String fromFilePath = "/Users/larack/Downloads/tt/app.wxss";
+		String fromFilePath = "/Users/larack/Downloads/tt";
+
+//		String fromFilePath = "/Users/larack/Downloads/top100_2";
 		String resultFilePath = "result.txt";
+		String fromFileFormat = ".wxss";
 
 		long start = System.currentTimeMillis();
-		WordsManager dft = new WordsManager(fromFilePath, resultFilePath, WordsManager.PARTEN_WXSS_STYLE); // 文件，线程数，文件分割大小
+		WordsManager dft = new WordsManager(fromFilePath, fromFileFormat, resultFilePath,
+				WordsManager.PARTEN_WXSS_STYLE, WordsManager.PARTEN_LETTER);
 		dft.calc();
 		long end = System.currentTimeMillis();
 
@@ -31,18 +32,4 @@ public class Main {
 
 	}
 
-	public static void test() {
-
-		// Pattern
-		// pattern=Pattern.compile("^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*$");
-		String str = "button::after { .loading {.globalBottomSubmitBtnHover {   color: #979797;";
-		// 分组且创建反向引用
-		String reg = "\\.[a-zA-Z']+\\s+\\{";
-		Pattern pattern = Pattern.compile(reg);
-		Matcher matcher = pattern.matcher(str);
-		while (matcher.find()) {
-			System.out.println(matcher.group());
-			// System.out.println(matcher.group(1));
-		}
-	}
 }

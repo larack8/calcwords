@@ -32,9 +32,16 @@ public class CalcWordsThread implements Runnable {
 
 	private String showParten = null;
 
+	/**
+	 * 
+	 * @param file
+	 * @param start
+	 * @param size
+	 * @param searchParten
+	 * @param showParten
+	 */
 	@SuppressWarnings("resource")
-	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) // 文件，起始位置，映射文件大小
-	{
+	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) {
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {
@@ -53,7 +60,6 @@ public class CalcWordsThread implements Runnable {
 		}
 	}
 
-	// 重写run()方法
 	@Override
 	public void run() {
 		String str = Charset.forName("UTF-8").decode(mbBuf).toString();
@@ -65,12 +71,18 @@ public class CalcWordsThread implements Runnable {
 			System.out.println(matcher.group());
 			// System.out.println(matcher.group(1));
 			String key = matcher.group();
-			if(null==showParten) {}
-			if (hashMap.get(key) == null) {
-				hashMap.put(key, 1);
+
+			if (null != showParten) {
+				Pattern showpattern = Pattern.compile(showParten);
+				Matcher showmatcher = showpattern.matcher(key);
+				if (showmatcher.find()) {
+					String showkey = showmatcher.group();
+					recordWords(showkey);
+				}
 			} else {
-				hashMap.put(key, hashMap.get(key) + 1);
+				recordWords(key);
 			}
+
 		}
 
 		try {
@@ -82,6 +94,17 @@ public class CalcWordsThread implements Runnable {
 			e.printStackTrace();
 		}
 		return;
+	}
+
+	private void recordWords(String key) {
+		if (null == hashMap) {
+			hashMap = new HashMap<String, Integer>();
+		}
+		if (hashMap.get(key) == null) {
+			hashMap.put(key, 1);
+		} else {
+			hashMap.put(key, hashMap.get(key) + 1);
+		}
 	}
 
 	// 获取当前线程的执行结果
