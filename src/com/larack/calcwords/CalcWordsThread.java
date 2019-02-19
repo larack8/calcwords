@@ -10,6 +10,8 @@ import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -17,14 +19,24 @@ import java.util.Map;
  *
  */
 public class CalcWordsThread implements Runnable {
+
 	private FileChannel fileChannel = null;
+
 	private FileLock lock = null;
+
 	private MappedByteBuffer mbBuf = null;
+
 	private Map<String, Integer> hashMap = null;
 
+	private String searchParten = "[^a-zA-Z']+";
+
+	private String showParten = null;
+
 	@SuppressWarnings("resource")
-	public CalcWordsThread(File file, long start, long size) // 文件，起始位置，映射文件大小
+	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) // 文件，起始位置，映射文件大小
 	{
+		this.searchParten = searchParten;
+		this.showParten = showParten;
 		try {
 			// 得到当前文件的通道
 			fileChannel = new RandomAccessFile(file, "rw").getChannel();
@@ -46,17 +58,18 @@ public class CalcWordsThread implements Runnable {
 	public void run() {
 		String str = Charset.forName("UTF-8").decode(mbBuf).toString();
 		str = str.toLowerCase();
-		String[] strArray = str.split("[^a-zA-Z']+");
-
-		for (int i = 0; i < strArray.length; i++) {
-
-			if (strArray[i].equals(""))
-				continue;
-
-			if (hashMap.get(strArray[i]) == null) {
-				hashMap.put(strArray[i], 1);
+		String reg = searchParten;
+		Pattern pattern = Pattern.compile(reg);
+		Matcher matcher = pattern.matcher(str);
+		while (matcher.find()) {
+			System.out.println(matcher.group());
+			// System.out.println(matcher.group(1));
+			String key = matcher.group();
+			if(null==showParten) {}
+			if (hashMap.get(key) == null) {
+				hashMap.put(key, 1);
 			} else {
-				hashMap.put(strArray[i], hashMap.get(strArray[i]) + 1);
+				hashMap.put(key, hashMap.get(key) + 1);
 			}
 		}
 

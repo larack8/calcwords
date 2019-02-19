@@ -18,7 +18,7 @@ import java.util.Vector;
 public class WordsManager {
 
 	// 要处理的文件
-	private File file = null;
+	private String fromFilePath = null;
 
 	private String resultPath;
 
@@ -35,18 +35,33 @@ public class WordsManager {
 	// 当前处理的文件位置
 	private long currentPos;
 
-	private int func = FUNC_CALC_WORDS;
+	private String searchParten = PARTEN_WORDS;
 
-	public static final int FUNC_CALC_WORDS = 1;
+	private String showParten = null;
 
-	public static final int FUNC_CALC_WXSS_STAYLE = 2;
+	/**
+	 * 单词正则
+	 */
+	public static final String PARTEN_WORDS = "^\\.[a-zA-Z']+";
 
-	public WordsManager(File file, String resultPath, int func)// 构造函数：文件，线程数，文件分割大小
+	/**
+	 * WXSS样式正则
+	 */
+	public static final String PARTEN_WXSS_STYLE = "\\.[a-zA-Z']+\\s+\\{";
+
+	/**
+	 * 
+	 * @param fromFilePath
+	 * @param resultPath
+	 * @param macthParten
+	 *            匹配正则表达式
+	 */
+	public WordsManager(String fromFilePath, String resultPath, String searchParten)// 构造函数：文件，线程数，文件分割大小
 	{
-		this(file, resultPath, func, 4, 1024 * 1024 * 10);
+		this(fromFilePath, resultPath, searchParten, 4, 1024 * 1024 * 10);
 	}
 
-	public WordsManager(File file, String resultPath, int func, int threadNum, long splitSize)// 构造函数：文件，线程数，文件分割大小
+	public WordsManager(String fromFilePath, String resultPath, String searchParten, int threadNum, long splitSize)// 构造函数：文件，线程数，文件分割大小
 	{
 		// 确定线程数最小是1个
 		if (threadNum < 1)
@@ -61,23 +76,58 @@ public class WordsManager {
 		if (splitSize > 1024 * 1024 * 10)
 			splitSize = 1024 * 1024 * 10;
 
-		this.file = file;
+		this.fromFilePath = fromFilePath;
 		this.resultPath = resultPath;
-		this.func = func;
+		this.searchParten = searchParten;
 		this.threadNum = threadNum;
 		this.splitSize = splitSize;
 		this.currentPos = 0;
 		this.listCalcWordsThreads = new Vector<CalcWordsThread>();
 		this.listThread = new Vector<Thread>();
+
+		System.out.println(
+				">>> 1.初始化: searchParten=" + searchParten + ", threadNum=" + threadNum + ", splitSize=" + splitSize);
+
+		File fileText = new File(resultPath);
+		if (fileText.exists()) {
+			fileText.delete();
+		}
 	}
 
-	public void doFile() throws IOException {
-		boolean matchStart = false;
-		boolean matchEnd = false;
-		while (currentPos < this.file.length()) {
+	public void calc() throws IOException {
+		File files = new File(fromFilePath);
+		if (!files.exists() || !files.canRead()) {
+			return;
+		}
+		calc(files);
+		saveResult();
+	}
+
+	private void calc(File file) throws IOException {
+		if (null == file) {
+			return;
+		}
+		if (file.isFile()) {
+			doFile(file);
+		} else {
+			File[] fs = file.listFiles();
+			for (File f : fs) {
+				if (f.isDirectory()) {
+					calc(f);
+				}
+				if (f.isFile()) {
+					doFile(f);
+				}
+			}
+		}
+	}
+
+	private void doFile(File file) throws IOException {
+		System.out.println(">>> 2.正在统计单词:" + fromFilePath);
+		while (currentPos < file.length()) {
 			for (int num = 0; num < threadNum; num++) {
 				if (currentPos < file.length()) {
-					CalcWordsThread CalcWordsThread = null;
+					CalcWordsThread calcWordsThread = null;
 
 					if (currentPos + splitSize < file.length()) {
 						RandomAccessFile raf = new RandomAccessFile(file, "r");
@@ -91,42 +141,29 @@ public class WordsManager {
 							// 是否到文件末尾，到了跳出
 							if (-1 == ch)
 								break;
-							if (FUNC_CALC_WORDS == func) {
+
+							if (PARTEN_WORDS.equals(searchParten)) {
 								// 是否是字母和'，都不是跳出（防止单词被截断）
-								if (false == Character.isLetter(ch) && '\'' != ch)
-									break;
-							} else if (FUNC_CALC_WXSS_STAYLE == func) {
-								if (ch == '.') {
-									matchStart = true;
-								} else if (ch == '{') {
-									matchEnd = true;
-								}
-								// 找到开头和结尾
-								if (matchStart && matchEnd) {
-									matchStart = false;
-									matchStart = false;
-									break;
-								}
-								// 不是单词和空格
-								else if (false == Character.isLetter(ch) && '\'' != ch && ' ' != ch) {
+								if (false == Character.isLetter(ch) && '\'' != ch) {
 									break;
 								}
 							}
 							offset++;
 						}
 
-						CalcWordsThread = new CalcWordsThread(file, currentPos, splitSize + offset);
+						calcWordsThread = new CalcWordsThread(file, currentPos, splitSize + offset, searchParten);
 						currentPos += splitSize + offset;
 
 						raf.close();
 					} else {
-						CalcWordsThread = new CalcWordsThread(file, currentPos, file.length() - currentPos);
+						calcWordsThread = new CalcWordsThread(file, currentPos, file.length() - currentPos,
+								searchParten);
 						currentPos = file.length();
 					}
 
-					Thread thread = new Thread(CalcWordsThread);
+					Thread thread = new Thread(calcWordsThread);
 					thread.start();
-					listCalcWordsThreads.add(CalcWordsThread);
+					listCalcWordsThreads.add(calcWordsThread);
 					listThread.add(thread);
 				}
 			}
@@ -147,6 +184,10 @@ public class WordsManager {
 			}
 		}
 
+	}
+
+	private void saveResult() {
+		System.out.println(">>> 3.正在保存结果到文件:" + resultPath);
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
 			// 使用TreeMap保证结果有序（按首字母排序）
@@ -178,8 +219,8 @@ public class WordsManager {
 			Iterator<String> iterator = keys.iterator();
 			while (iterator.hasNext()) {
 				String key = (String) iterator.next();
-				String calcResult = "样式:" + key + " 出现次数:" + tMap.get(key);
-				System.out.println(calcResult);
+				String calcResult = "样式:" + key + " 出现次数:" + tMap.get(key) + "\n";
+				System.out.print(calcResult);
 				TextToFile(resultPath, calcResult);
 			}
 			return;
@@ -191,7 +232,7 @@ public class WordsManager {
 			// 创建文件对象
 			File fileText = new File(strFilename);
 			// 向文件写入对象写入信息
-			FileWriter fileWriter = new FileWriter(fileText);
+			FileWriter fileWriter = new FileWriter(fileText, true);
 			// 写文件
 			fileWriter.write(strBuffer);
 			// 关闭
