@@ -42,6 +42,7 @@ public class CalcWordsThread implements Runnable {
 	 */
 	@SuppressWarnings("resource")
 	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) {
+		System.out.println("** CalcWordsThread: " + file.getAbsolutePath() + ", start=" + start + ", size=" + size);
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {

@@ -16,9 +16,9 @@ public class Main {
 
 	public static void testCalcWords() throws IOException {
 
-		String fromFilePath = "/Users/larack/Downloads/tt";
+//		String fromFilePath = "/Users/larack/Downloads/tt";
 
-//		String fromFilePath = "/Users/larack/Downloads/top100_2";
+		String fromFilePath = "/Users/larack/Downloads/top100_2";
 		String resultFilePath = "result.txt";
 		String fromFileFormat = ".wxss";
 

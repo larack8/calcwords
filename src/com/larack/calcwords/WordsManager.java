@@ -42,19 +42,19 @@ public class WordsManager {
 	private String showParten = null;
 
 	/**
-	 * 英文字符（不管前后空格）
+	 * 英文字符（不管前后空格,加上短横杠）
 	 */
-	public static final String PARTEN_LETTER = "[a-zA-Z]+";
+	public static final String PARTEN_LETTER = "[a-zA-Z\\-]+";
 
 	/**
-	 * 单词正则（前后空格）
+	 * 单词正则（前后空格,加上短横杠）
 	 */
 	public static final String PARTEN_WORDS = "[^a-zA-Z']+";
 
 	/**
 	 * WXSS样式正则
 	 */
-	public static final String PARTEN_WXSS_STYLE = "\\.[a-zA-Z']+\\s+\\{";
+	public static final String PARTEN_WXSS_STYLE = "\\.[a-zA-Z\\-']+\\s+\\{";
 
 	/**
 	 * 
@@ -76,7 +76,7 @@ public class WordsManager {
 	 */
 	public WordsManager(String fromFilePath, String fromFileFormat, String resultPath, String searchParten,
 			String showParten) {
-		this(fromFilePath, fromFileFormat, resultPath, searchParten, showParten, 4, 1024 * 1024 * 10);
+		this(fromFilePath, fromFileFormat, resultPath, searchParten, showParten, 1000, 1024 * 1024 * 100);
 	}
 
 	/**
@@ -95,17 +95,18 @@ public class WordsManager {
 		if (threadNum < 1)
 			threadNum = 1;
 		// 确定线程数最大是10个，防止内存不够用
-		if (threadNum > 10)
-			threadNum = 10;
+		if (threadNum > 1000)
+			threadNum = 1000;
 		// 分割最小为1M大小文件
-		if (splitSize < 1024 * 1024)
-			splitSize = 1024 * 1024;
+		if (splitSize < 1 * 1024 * 1024)
+			splitSize = 1 * 1024 * 1024;
 		// 分割最大为10M大小文件
-		if (splitSize > 1024 * 1024 * 10)
-			splitSize = 1024 * 1024 * 10;
+		if (splitSize > 1024 * 1024 * 1000)
+			splitSize = 1024 * 1024 * 1000;
 
 		this.fromFilePath = fromFilePath;
 		this.resultFilePath = resultFilePath;
+		this.fromFileFormat = fromFileFormat;
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		this.threadNum = threadNum;
@@ -114,8 +115,8 @@ public class WordsManager {
 		this.listCalcWordsThreads = new Vector<CalcWordsThread>();
 		this.listThread = new Vector<Thread>();
 
-		System.out.println(
-				">>> 1.初始化: searchParten=" + searchParten + ", threadNum=" + threadNum + ", splitSize=" + splitSize);
+		System.out.println(">>> 1.初始化: fromFileFormat=" + fromFileFormat + ", searchParten=" + searchParten
+				+ ", showParten=" + showParten + ", threadNum=" + threadNum + ", splitSize=" + splitSize);
 
 		File fileText = new File(this.resultFilePath);
 		if (fileText.exists()) {
@@ -144,8 +145,9 @@ public class WordsManager {
 				if (f.isDirectory()) {
 					calc(f);
 				}
-				if (null != fromFileFormat && f.getAbsolutePath().endsWith(fromFileFormat)) {
-					if (f.isFile()) {
+				String fp = f.getAbsolutePath();
+				if (null != fromFileFormat) {
+					if (fp.endsWith(fromFileFormat) && f.isFile()) {
 						doFile(f);
 					}
 				} else if (f.isFile()) {
@@ -155,8 +157,15 @@ public class WordsManager {
 		}
 	}
 
+	/**
+	 * 分片处理
+	 * 
+	 * @param file
+	 * @throws IOException
+	 */
 	private void doFile(File file) throws IOException {
-		System.out.println(">>> 2.正在统计单词:" + fromFilePath);
+		System.out.println(">>> 2.正在统计单词:" + file.getAbsolutePath());
+		currentPos = 0;
 		while (currentPos < file.length()) {
 			for (int num = 0; num < threadNum; num++) {
 				if (currentPos < file.length()) {
@@ -172,8 +181,10 @@ public class WordsManager {
 							char ch = (char) raf.read();
 
 							// 是否到文件末尾，到了跳出
-							if (-1 == ch)
+							if (-1 == ch) {
+								currentPos = 0;
 								break;
+							}
 
 							if (PARTEN_WORDS.equals(searchParten)) {
 								// 是否是字母和'，都不是跳出（防止单词被截断）
@@ -196,6 +207,8 @@ public class WordsManager {
 					}
 
 					Thread thread = new Thread(calcWordsThread);
+					System.out.println("** CalcWordsThread is " + thread.getId() + ", file path is "
+							+ file.getAbsolutePath() + ", currentPos=" + currentPos);
 					thread.start();
 					listCalcWordsThreads.add(calcWordsThread);
 					listThread.add(thread);
@@ -220,8 +233,12 @@ public class WordsManager {
 
 	}
 
+	/**
+	 * 保存结果
+	 */
 	private void saveResult() {
-		System.out.println(">>> 3.正在保存结果到文件:" + resultFilePath);
+
+		System.out.println(">>> 3.正在保存结果到文件:" + (new File(resultFilePath).getAbsolutePath()));
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
 			// 使用TreeMap保证结果有序（按首字母排序）
@@ -261,6 +278,12 @@ public class WordsManager {
 		}).start();
 	}
 
+	/**
+	 * 结果写入文件
+	 * 
+	 * @param strFilename
+	 * @param strBuffer
+	 */
 	public static void TextToFile(final String strFilename, final String strBuffer) {
 		try {
 			// 创建文件对象
