@@ -1,7 +1,6 @@
 package com.larack.calcwords;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -40,9 +39,8 @@ public class CalcWordsThread implements Runnable {
 	 * @param searchParten
 	 * @param showParten
 	 */
-	@SuppressWarnings("resource")
 	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) {
-		System.out.println("** CalcWordsThread: " + file.getAbsolutePath() + ", start=" + start + ", size=" + size);
+//		System.out.println("** CalcWordsThread: " + file.getAbsolutePath() + ", start=" + start + ", size=" + size);
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {
@@ -54,9 +52,8 @@ public class CalcWordsThread implements Runnable {
 			mbBuf = fileChannel.map(FileChannel.MapMode.READ_ONLY, start, size);
 			// 创建HashMap实例存放处理结果
 			hashMap = new HashMap<String, Integer>();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			System.out.print("Exception when init CalcWordsThread : " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -69,7 +66,7 @@ public class CalcWordsThread implements Runnable {
 		Pattern pattern = Pattern.compile(reg);
 		Matcher matcher = pattern.matcher(str);
 		while (matcher.find()) {
-			System.out.println(matcher.group());
+//			System.out.println(matcher.group());
 			// System.out.println(matcher.group(1));
 			String key = matcher.group();
 

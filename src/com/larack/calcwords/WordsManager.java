@@ -25,12 +25,12 @@ public class WordsManager {
 	/**
 	 * 默认线程个数
 	 */
-	public static final int DEFAULT_THREAD_NUM = 1000;
+	public static final int DEFAULT_THREAD_NUM = 5 * 1000;
 
 	/**
 	 * 默认文件分块大小 100M
 	 */
-	public static final long DEFAULT_SPLIT_SIZE = 1024 * 1024 * 100;
+	public static final long DEFAULT_SPLIT_SIZE = 1024 * 1024 * 1000;
 
 	/**
 	 * 要处理的文件
@@ -76,6 +76,8 @@ public class WordsManager {
 	private String searchParten = PartenUtils.PARTEN_WORDS;
 
 	private String showParten = null;
+
+	private long calcStartTime;
 
 	/**
 	 * 按照value进行降序排序
@@ -151,14 +153,10 @@ public class WordsManager {
 
 		System.out.println(">>> 1.初始化: fromFileFormat=" + fromFileFormat + ", searchParten=" + searchParten
 				+ ", showParten=" + showParten + ", threadNum=" + threadNum + ", splitSize=" + splitSize);
-
-		File fileText = new File(this.resultFilePath);
-		if (fileText.exists()) {
-			fileText.delete();
-		}
 	}
 
 	public void calc() throws IOException {
+		calcStartTime = System.currentTimeMillis();
 		File files = new File(fromFilePath);
 		if (!files.exists() || !files.canRead()) {
 			return;
@@ -199,7 +197,7 @@ public class WordsManager {
 	 */
 	private void doFile(File file) throws IOException {
 		totalCalcFileCount++;
-		System.out.println(">>> 2.正在统计文件 " + totalCalcFileCount + " : " + file.getAbsolutePath());
+		System.out.println(">>> 2.正在统计文件 " + totalCalcFileCount + ": " + file.getAbsolutePath());
 		currentPos = 0;
 		while (currentPos < file.length()) {
 			for (int num = 0; num < threadNum; num++) {
@@ -242,8 +240,8 @@ public class WordsManager {
 					}
 
 					Thread thread = new Thread(calcWordsThread);
-					System.out.println("** CalcWordsThread is " + thread.getId() + ", file path is "
-							+ file.getAbsolutePath() + ", currentPos=" + currentPos);
+//					System.out.println("** CalcWordsThread is " + thread.getId() + ", file path is "
+//							+ file.getAbsolutePath() + ", currentPos=" + currentPos);
 					thread.start();
 					listCalcWordsThreads.add(calcWordsThread);
 					listThread.add(thread);
@@ -278,10 +276,6 @@ public class WordsManager {
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
 
-			for (int loop = 0; loop < listThread.size(); loop++) {
-				listThread.get(loop).interrupt();
-			}
-
 			TreeMap<String, Integer> tMap = new TreeMap<String, Integer>();
 
 			// 使用TreeMap保证结果有序（按首字母排序）
@@ -293,7 +287,6 @@ public class WordsManager {
 				Iterator<String> iterator = keys.iterator();
 				while (iterator.hasNext()) {
 					String key = (String) iterator.next();
-
 					if (key.equals(""))
 						continue;
 					if (tMap.get(key) == null) {
@@ -304,20 +297,39 @@ public class WordsManager {
 				}
 			}
 
+			for (int loop = 0; loop < listThread.size(); loop++) {
+				listThread.get(loop).interrupt();
+			}
+
+			if (tMap.size() <= 0) {
+				System.out.println("** warning ** 总共查询了 " + totalCalcFileCount + " 个文件, 没有匹配到任何数据，程序退出 !!! ");
+				return;
+			}
+
 			// 使用TreeMap保证结果有序（然后再按查找到的次数递减排序）
 			// map转换成list进行排序
 			System.out.println("# 2. 正在按统计次数排序... ");
 			List<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(tMap.entrySet());
 			Collections.sort(list, valueDownComparator);
+
 			System.out.println("# 3. 正在保存到文件... ");
+
+			File fileText = new File(this.resultFilePath);
+			if (fileText.exists()) {
+				fileText.delete();
+			}
+
 			for (Map.Entry<String, Integer> entry : list) {
 				String key = entry.getKey();
 				Integer value = entry.getValue();
 				String calcResult = "样式:" + key + " 出现次数:" + value + "\n";
-				System.out.print(calcResult);
+//				System.out.print(calcResult);
 				saveResultToFile(resultFilePath, calcResult);
 			}
-			System.out.println("# . done !!! ");
+			System.out.println("## done !! ");
+			long end = System.currentTimeMillis();
+			System.out.println("@@ 总结: 总共查询了 " + totalCalcFileCount + " 个文件, 创建 " + listCalcWordsThreads.size()
+					+ " 个线程, 匹配到 " + tMap.size() + " 个单词, 耗时 " + (end - calcStartTime) / 1000.0 + " 秒!");
 			return;
 		}).start();
 	}
