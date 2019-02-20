@@ -19,10 +19,10 @@ public class Main {
 		String fromFilePath = "/Users/Shared/my_git/java/CalcWords/testletters/";
 		String resultFilePath = "/Users/Shared/my_git/java/CalcWords/result.txt";
 
-		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
+//		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
 //		calcLetters(fromFilePath, resultFilePath);// 统计英文单词
 //		calcWxssStyle(fromFilePath, resultFilePath);// 统计微信小程序源码WWXSS样式
-//		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
+		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
 //		calcHtml(fromFilePath, resultFilePath);// 统计网页html内容
 //		calcCellPhone(fromFilePath, resultFilePath);// 统计手机号码
 //		calcIpAddress(fromFilePath, resultFilePath);// 统计IP地址
