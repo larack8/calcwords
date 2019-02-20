@@ -1,0 +1,94 @@
+{
+    "pages": [
+        "pages/main/index",
+        "pages/hot/index",
+        "pages/raiders/index",
+        "pages/me/index",
+        "pages/index/index",
+        "pages/launch/index",
+        "pages/rank_nobar/rank_nobar",
+        "pages/rank_detail/rank_detail",
+        "pages/rank/index",
+        "pages/webview/index",
+        "pages/webview/webview",
+        "pages/club_detail/club_detail",
+        "pages/history_battle/history_battle",
+        "packageA/pages/club/index",
+        "packageA/pages/club/reply",
+        "packageA/pages/club_index/club_index",
+        "packageA/pages/competition/index",
+        "packageA/pages/competition/room",
+        "packageA/pages/search/index",
+        "packageA/pages/gift/index",
+        "packageA/pages/video/index",
+        "packageA/pages/comment/index",
+        "packageA/pages/subject/index",
+        "packageA/pages/continue_cj/continue_cj",
+        "packageA/pages/reply/index"
+    ],
+    "window": {
+        "backgroundTextStyle": "light",
+        "navigationBarBackgroundColor": "#fff",
+        "navigationBarTitleText": "绝地求生：刺激战场",
+        "navigationBarTextStyle": "black",
+        "enablePullDownRefresh": true,
+        "onReachBottomDistance": 200
+    },
+    "tabBar": {
+        "color": "#4c5154",
+        "selectedColor": "#a48d3b",
+        "backgroundColor": "#f7f7f7",
+        "position": "bottom",
+        "list": [
+            {
+                "text": "首页",
+                "pagePath": "pages/main/index",
+                "iconPath": "styles/icons/home.png",
+                "selectedIconPath": "styles/icons/home-active.png"
+            },
+            {
+                "text": "精选",
+                "pagePath": "pages/hot/index",
+                "iconPath": "styles/icons/choice.png",
+                "selectedIconPath": "styles/icons/choice-active.png"
+            },
+            {
+                "text": "攻略",
+                "pagePath": "pages/raiders/index",
+                "iconPath": "styles/icons/raiders.png",
+                "selectedIconPath": "styles/icons/raiders-active.png"
+            },
+            {
+                "text": "我",
+                "pagePath": "pages/me/index",
+                "iconPath": "styles/icons/me.png",
+                "selectedIconPath": "styles/icons/me-active.png"
+            }
+        ]
+    },
+    "subPackages": [
+        {
+            "root": "packageA",
+            "pages": [
+                "packageA/pages/club/index",
+                "packageA/pages/club/reply",
+                "packageA/pages/club_index/club_index",
+                "packageA/pages/competition/index",
+                "packageA/pages/competition/room",
+                "packageA/pages/search/index",
+                "packageA/pages/gift/index",
+                "packageA/pages/video/index",
+                "packageA/pages/comment/index",
+                "packageA/pages/subject/index",
+                "packageA/pages/continue_cj/continue_cj",
+                "packageA/pages/reply/index"
+            ]
+        }
+    ],
+    "navigateToMiniProgramAppIdList": [
+        "wx4a0a73ec028e47d7",
+        "wxff3bb5c177303374",
+        "wx98bb879bbb53ad81",
+        "wxff74d0a5a3f73ee6"
+    ]
+}

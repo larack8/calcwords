@@ -9,8 +9,7 @@ CalcWords 是一个java版本的文件内容查找、统计工具
 > - [x] 支持查找指定目录下的指定格式文件
 > - [x] 匹配字符使用正则表达式,显示格式也是正则表达式
 > - [x] 支持统计匹配的字符个数
-> - [x] 统计结果合并保存,分开保存
-> - [x] 丰富的正则表达式
+> - [x] 列出常用正则表达式
 
 ### 2. 使用说明
 
@@ -43,19 +42,15 @@ CalcWords 是一个java版本的文件内容查找、统计工具
 3. 举例
 
 ```java
-	String fromFilePath = "/Users/Shared/my_git/java/CalcWords/testletters/"; //要读取的文件路径
-	String resultFilePath = "/Users/Shared/my_git/java/CalcWords/result.txt";//结果保存路径
+	String fromFilePath = "/Users/larack/Downloads/tt"; //要读取的文件路径
+	String resultFilePath = "result.txt";//结果保存路径
     String fromFileFormat = ".wxss";//读取的文件格式
 	WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath,
         WordsManager.PARTEN_WXSS_STYLE, WordsManager.PARTEN_LETTER);
 	wm.calc();//开始统计
 ```
 
-4. 输出结果
-统计结果除了在 resultFilePath 路径上保存之外，还会在同级别路径上分别保存以_key.txt结尾的key和以_value.txt结尾的value,如:
-> /Users/Shared/my_git/java/CalcWords/result.txt_key.txt
-> /Users/Shared/my_git/java/CalcWords/result.txt_value.txt
-
+4. 输出结果示例
 ![输出结果示例](out_sample.png)
 
 ### 3. 扩展用法

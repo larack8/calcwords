@@ -354,7 +354,7 @@ public class WordsManager {
 		for (Map.Entry<String, Integer> entry : list) {
 			String key = entry.getKey();
 			Integer value = entry.getValue();
-			String calcResult = "样式:" + key + " 出现次数:" + value + "\n";
+			String calcResult = "字符:" + key + ",出现次数:" + value + "\n";
 //			System.out.print(calcResult);
 			saveResultToFile(resultFilePath, calcResult);
 		}
