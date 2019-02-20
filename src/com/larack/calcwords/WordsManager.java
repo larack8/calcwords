@@ -270,8 +270,7 @@ public class WordsManager {
 	 * 保存结果
 	 */
 	private void saveResult() {
-		File f = new File(resultFilePath);
-		System.out.println(">>> 3.正在保存结果到文件:" + (f.getAbsolutePath()));
+		System.out.println(">>> 3.正在处理结果");
 
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
@@ -314,24 +313,51 @@ public class WordsManager {
 
 			System.out.println("# 3. 正在保存到文件... ");
 
-			File fileText = new File(this.resultFilePath);
-			if (fileText.exists()) {
-				fileText.delete();
-			}
+			saveResultKVtogether(list);
+			saveResultKVindependent(list);
 
-			for (Map.Entry<String, Integer> entry : list) {
-				String key = entry.getKey();
-				Integer value = entry.getValue();
-				String calcResult = "样式:" + key + " 出现次数:" + value + "\n";
-//				System.out.print(calcResult);
-				saveResultToFile(resultFilePath, calcResult);
-			}
 			System.out.println("## done !! ");
 			long end = System.currentTimeMillis();
 			System.out.println("@@ 总结: 总共查询了 " + totalCalcFileCount + " 个文件, 创建 " + listCalcWordsThreads.size()
 					+ " 个线程, 匹配到 " + tMap.size() + " 个单词, 耗时 " + (end - calcStartTime) / 1000.0 + " 秒!");
 			return;
 		}).start();
+	}
+
+	public void saveResultKVindependent(List<Map.Entry<String, Integer>> list) {
+		String keyFilePath = resultFilePath + "_" + "key.txt";
+		String valueFilePath = resultFilePath + "_" + "value.txt";
+		File keyFile = new File(keyFilePath);
+		if (keyFile.exists()) {
+			keyFile.delete();
+		}
+		File valueFile = new File(valueFilePath);
+		if (valueFile.exists()) {
+			valueFile.delete();
+		}
+		System.out.println(
+				"## 正在分别保存Key和Value到文件中, Key:" + keyFile.getAbsolutePath() + "; Value:" + valueFile.getAbsolutePath());
+		for (Map.Entry<String, Integer> entry : list) {
+			String key = entry.getKey();
+			Integer value = entry.getValue();
+			saveResultToFile(keyFilePath, key + "\n");
+			saveResultToFile(valueFilePath, String.valueOf(value) + "\n");
+		}
+	}
+
+	public void saveResultKVtogether(List<Map.Entry<String, Integer>> list) {
+		File fileText = new File(this.resultFilePath);
+		if (fileText.exists()) {
+			fileText.delete();
+		}
+		System.out.println("## 正在保存结果到文件中 " + fileText.getAbsolutePath());
+		for (Map.Entry<String, Integer> entry : list) {
+			String key = entry.getKey();
+			Integer value = entry.getValue();
+			String calcResult = "样式:" + key + " 出现次数:" + value + "\n";
+//			System.out.print(calcResult);
+			saveResultToFile(resultFilePath, calcResult);
+		}
 	}
 
 	/**

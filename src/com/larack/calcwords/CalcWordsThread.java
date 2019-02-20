@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
  */
 public class CalcWordsThread implements Runnable {
 
+	private String filePath = null;
+
 	private FileChannel fileChannel = null;
 
 	private FileLock lock = null;
@@ -30,6 +32,8 @@ public class CalcWordsThread implements Runnable {
 	private String searchParten = "[^a-zA-Z']+";
 
 	private String showParten = null;
+
+	private boolean finish = false;
 
 	/**
 	 * 
@@ -44,6 +48,7 @@ public class CalcWordsThread implements Runnable {
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {
+			filePath = file.getAbsolutePath();
 			// 得到当前文件的通道
 			fileChannel = new RandomAccessFile(file, "rw").getChannel();
 			// 锁定当前文件的部分
@@ -91,6 +96,8 @@ public class CalcWordsThread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		finish = true;
+//		System.out.println("finish filePath: " + filePath);
 		return;
 	}
 

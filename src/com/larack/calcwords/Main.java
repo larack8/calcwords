@@ -16,14 +16,14 @@ public class Main {
 
 	public static void testCalcWords() throws IOException {
 
-		String fromFilePath = "/Users/larack/Downloads/tt";
+//		String fromFilePath = "/Users/larack/Downloads/tt";
 
-//		String fromFilePath = "/Users/larack/Downloads/top100_2";
+		String fromFilePath = "/Users/larack/Downloads/top100_2";
 		String resultFilePath = "result.txt";
 		String fromFileFormat = ".wxss";
 
 		WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath,
-				PartenUtils.PARTEN_WXSS_PROPERTY, null);
+				PartenUtils.PARTEN_WXSS_PROPERTY, PartenUtils.PARTEN_WORDS);
 		wm.calc();
 
 	}

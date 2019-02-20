@@ -9,12 +9,12 @@ public class PartenUtils {
 	/**
 	 * 单词正则（前后空格,加上短横杠）
 	 */
-	public static final String PARTEN_WORDS = "[^a-zA-Z']+";
+	public static final String PARTEN_WORDS = "[A-Za-z0-9'\\-]+";
 
 	/**
 	 * WXSS属性正则
 	 */
-	public static final String PARTEN_WXSS_PROPERTY = "\\s[A-Za-z0-9'\\-]+:[\\s]+";
+	public static final String PARTEN_WXSS_PROPERTY = "\\s+[A-Za-z0-9'\\-]+:[\\s]";
 //	public static final String PARTEN_WXSS_PROPERTY = "\\s+[A-Za-z0-9\\-]+:[\\s]+[A-Za-z0-9\\-#\\.%,]+;";
 //	public static final String PARTEN_WXSS_PROPERTY = "[^\\s]+[a-zA-Z\\-']+:[\\s]+[A-Za-z0-9\\-]+[;]";
 
