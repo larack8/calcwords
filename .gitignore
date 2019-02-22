@@ -1,1 +1,5 @@
 /bin/
+result.txt_key.txt
+result.txt_value.txt
+.settings/org.eclipse.jdt.core.prefs
+.DS_Store
