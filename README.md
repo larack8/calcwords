@@ -42,12 +42,14 @@ CalcWords 是一个java版本的文件内容查找、统计工具
 
 3. 举例
 
+统计中文汉字个数，并排名
+
 ```java
 	String fromFilePath = "/Users/Shared/my_git/java/CalcWords/testletters/"; //要读取的文件路径
 	String resultFilePath = "/Users/Shared/my_git/java/CalcWords/result.txt";//结果保存路径
     String fromFileFormat = ".wxss";//读取的文件格式
 	WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath,
-        WordsManager.PARTEN_WXSS_STYLE, WordsManager.PARTEN_LETTER);
+        WordsManager.PARTEN_LANGUAGE_CH, null);
 	wm.calc();//开始统计
 ```
 
@@ -190,16 +192,16 @@ CalcWords 是一个java版本的文件内容查找、统计工具
 
 > * email: [jinqiangood@gmail.com], [larack@126.com]
 
-> * [jinqianli-知乎](https://www.zhihu.com/people/jinqianli/)
-
 > * [jinqianli-cnblog](https://www.cnblogs.com/larack/)
 
-> * jinqianli-官方小程序
+> * [jinqianli-知乎](https://www.zhihu.com/people/jinqianli/)
+
+* jinqianli-官方小程序
 
 ![jinqianli-官方小程序](jinqianli_miniapp_logo.png)
 
 
-如果你觉得这篇文章很好，请赞赏作者加个鸡腿吧
+* 如果你觉得这篇文章很好，请赞赏作者加个鸡腿吧
 
 ![jinqianli-赞赏码](jinqianli_shoukuan.png)
 

@@ -16,17 +16,32 @@ public class Main {
 
 	public static void testCalcWords() throws IOException {
 
-		String fromFilePath = "/Users/Shared/my_git/java/CalcWords/testletters/";
-		String resultFilePath = "/Users/Shared/my_git/java/CalcWords/result.txt";
+		String fromFilePath = "/Users/larack/Downloads/top100";
+		String resultFilePath = "/Users/larack/Downloads/result.txt";
+
+		calcCustom(fromFilePath, resultFilePath);
 
 //		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
 //		calcLetters(fromFilePath, resultFilePath);// 统计英文单词
 //		calcWxssStyle(fromFilePath, resultFilePath);// 统计微信小程序源码WWXSS样式
-		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
+//		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
 //		calcHtml(fromFilePath, resultFilePath);// 统计网页html内容
 //		calcCellPhone(fromFilePath, resultFilePath);// 统计手机号码
 //		calcIpAddress(fromFilePath, resultFilePath);// 统计IP地址
 		// 更多用法请参照calcBase函数,然后参照PartenUtils.java修正则表达式
+	}
+
+	/**
+	 * 
+	 * @param fromFilePath
+	 * @param resultFilePath
+	 * @throws IOException
+	 */
+	public static void calcCustom(String fromFilePath, String resultFilePath) throws IOException {
+		String fromFileFormat = null;
+		String custom = "navigationStyle";
+		WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath, custom, null);
+		wm.calc();
 	}
 
 	/**

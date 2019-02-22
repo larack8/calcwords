@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
  */
 public class CalcWordsThread implements Runnable {
 
-	private String filePath = null;
-
 	private FileChannel fileChannel = null;
 
 	private FileLock lock = null;
@@ -33,8 +31,6 @@ public class CalcWordsThread implements Runnable {
 
 	private String showParten = null;
 
-	private boolean finish = false;
-
 	/**
 	 * 
 	 * @param file
@@ -43,12 +39,13 @@ public class CalcWordsThread implements Runnable {
 	 * @param searchParten
 	 * @param showParten
 	 */
+	@SuppressWarnings("resource")
 	public CalcWordsThread(File file, long start, long size, String searchParten, String showParten) {
 //		System.out.println("** CalcWordsThread: " + file.getAbsolutePath() + ", start=" + start + ", size=" + size);
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {
-			filePath = file.getAbsolutePath();
+			file.getAbsolutePath();
 			// 得到当前文件的通道
 			fileChannel = new RandomAccessFile(file, "rw").getChannel();
 			// 锁定当前文件的部分
@@ -96,8 +93,7 @@ public class CalcWordsThread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		finish = true;
-//		System.out.println("finish filePath: " + filePath);
+		// System.out.println("finish filePath: " + filePath);
 		return;
 	}
 
