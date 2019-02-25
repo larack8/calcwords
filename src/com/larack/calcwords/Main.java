@@ -19,9 +19,9 @@ public class Main {
 		String fromFilePath = "/Users/larack/Downloads/top100";
 		String resultFilePath = "/Users/larack/Downloads/result.txt";
 
-		calcCustom(fromFilePath, resultFilePath);
+//		calcCustom(fromFilePath, resultFilePath);
 
-//		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
+		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
 //		calcLetters(fromFilePath, resultFilePath);// 统计英文单词
 //		calcWxssStyle(fromFilePath, resultFilePath);// 统计微信小程序源码WWXSS样式
 //		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
@@ -92,7 +92,7 @@ public class Main {
 	public static void calcWxssProperty(String fromFilePath, String resultFilePath) throws IOException {
 		String fromFileFormat = ".wxss";
 		WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath,
-				PartenUtils.PARTEN_WXSS_PROPERTY, PartenUtils.PARTEN_WORDS);
+				PartenUtils.PARTEN_WXSS_PROPERTY, PartenUtils.PARTEN_WXSS_PROPERTY_SHOW);
 		wm.calc();
 	}
 

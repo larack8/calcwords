@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -31,6 +32,11 @@ public class WordsManager {
 	 * 默认文件分块大小 100M
 	 */
 	public static final long DEFAULT_SPLIT_SIZE = 1024 * 1024 * 1000;
+
+	/**
+	 * 忽略的文件名称
+	 */
+	public static final String IGNORE_FILES[] = { ".svn", ".git" };
 
 	/**
 	 * 要处理的文件
@@ -171,22 +177,37 @@ public class WordsManager {
 		}
 		if (file.isFile()) {
 			doFile(file);
-		} else {
+		} else if (file.isDirectory()) {
 			File[] fs = file.listFiles();
 			for (File f : fs) {
-				if (f.isDirectory()) {
-					calc(f);
-				}
-				String fp = f.getAbsolutePath();
-				if (null != fromFileFormat) {
-					if (fp.endsWith(fromFileFormat) && f.isFile()) {
-						doFile(f);
-					}
-				} else if (f.isFile()) {
-					doFile(f);
-				}
+				calc(f);
 			}
 		}
+	}
+
+	private boolean canCalcFile(File f) {
+		if (null == f || !f.canRead() || !f.exists()) {
+			return false;
+		}
+		String fp = f.getAbsolutePath();
+		String[] pdirs = fp.split(File.separator);
+		ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(pdirs));
+		for (String ig : IGNORE_FILES) {
+			if (arrayList.contains(ig)) {
+				System.out.println("** ignore file " + fp);
+				return false;
+			}
+		}
+		if (f.isDirectory()) {
+			return true;
+		}
+		if (f.isFile()) {
+			if (null != fromFileFormat) {
+				return fp.endsWith(fromFileFormat);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -196,6 +217,9 @@ public class WordsManager {
 	 * @throws IOException
 	 */
 	private void doFile(File file) throws IOException {
+		if (!canCalcFile(file)) {
+			return;
+		}
 		totalCalcFileCount++;
 		System.out.println(">>> 2.正在统计文件 " + totalCalcFileCount + ": " + file.getAbsolutePath());
 		currentPos = 0;
@@ -281,7 +305,9 @@ public class WordsManager {
 			System.out.println("# 1. 正在按首字母排序... ");
 			for (int loop = 0; loop < listCalcWordsThreads.size(); loop++) {
 				Map<String, Integer> hMap = listCalcWordsThreads.get(loop).getResultMap();
-
+				if (null == hMap) {
+					continue;
+				}
 				Set<String> keys = hMap.keySet();
 				Iterator<String> iterator = keys.iterator();
 				while (iterator.hasNext()) {
