@@ -20,7 +20,7 @@ public class Main {
 		String fromFilePath = dir;
 		String resultFilePath = dir + "\\result.txt";
 
-		calcCustom(fromFilePath, ".smali", resultFilePath, "imei", null);
+		calcCustom(fromFilePath, ".txt", resultFilePath, "navigationStyle", null);
 
 //		calcCustom(fromFilePath, resultFilePath,"navigationStyle");
 //		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
