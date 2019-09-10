@@ -16,12 +16,14 @@ public class Main {
 
 	public static void testCalcWords() throws IOException {
 
-		String fromFilePath = "/Users/larack/Downloads/top100";
-		String resultFilePath = "/Users/larack/Downloads/result.txt";
+		String dir = "E:\\dir\\code";
+		String fromFilePath = dir;
+		String resultFilePath = dir + "\\result.txt";
 
-//		calcCustom(fromFilePath, resultFilePath);
+		calcCustom(fromFilePath, ".smali", resultFilePath, "imei", null);
 
-		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
+//		calcCustom(fromFilePath, resultFilePath,"navigationStyle");
+//		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字
 //		calcLetters(fromFilePath, resultFilePath);// 统计英文单词
 //		calcWxssStyle(fromFilePath, resultFilePath);// 统计微信小程序源码WWXSS样式
 //		calcWxssProperty(fromFilePath, resultFilePath);// 统计微信小程序源码WXSS属性
@@ -32,15 +34,28 @@ public class Main {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param fromFilePath
 	 * @param resultFilePath
+	 * @param str
 	 * @throws IOException
 	 */
-	public static void calcCustom(String fromFilePath, String resultFilePath) throws IOException {
-		String fromFileFormat = null;
-		String custom = "navigationStyle";
-		WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath, custom, null);
+	public static void calcCustom(String fromFilePath, String resultFilePath, String str) throws IOException {
+		calcCustom(fromFilePath, null, resultFilePath, str, null);
+	}
+
+	/**
+	 *
+	 * @param fromFilePath   搜索的文件夹或者文件
+	 * @param fromFileFormat 要搜索的文件格式
+	 * @param resultFilePath 记录结果文件
+	 * @param searchParten   搜索正则表达式
+	 * @param showParten     显示结果正则表达式
+	 * @throws IOException
+	 */
+	public static void calcCustom(String fromFilePath, String fromFileFormat, String resultFilePath,
+			String searchParten, String showParten) throws IOException {
+		WordsManager wm = new WordsManager(fromFilePath, fromFileFormat, resultFilePath, searchParten, showParten);
 		wm.calc();
 	}
 

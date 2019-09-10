@@ -39,6 +39,11 @@ public class WordsManager {
 	public static final String IGNORE_FILES[] = { ".svn", ".git" };
 
 	/**
+	 * 是否忽略 .GIT, .SVN 等版本控制目录的搜索
+	 */
+	public boolean ignoreGit = false;
+
+	/**
 	 * 要处理的文件
 	 */
 	private String fromFilePath = null;
@@ -116,7 +121,7 @@ public class WordsManager {
 	 */
 	public WordsManager(String fromFilePath, String fromFileFormat, String resultPath, String searchParten,
 			String showParten) {
-		this(fromFilePath, fromFileFormat, resultPath, searchParten, showParten, DEFAULT_THREAD_NUM,
+		this(fromFilePath, fromFileFormat, resultPath, searchParten, showParten, true, DEFAULT_THREAD_NUM,
 				DEFAULT_SPLIT_SIZE);
 	}
 
@@ -127,11 +132,12 @@ public class WordsManager {
 	 * @param resultPath     结果保存路径
 	 * @param searchParten   搜索正则表达式
 	 * @param showParten     显示结果正则表达式
+	 * @param ignoreGit      是否忽略 .GIT, .SVN 等版本控制目录的搜索
 	 * @param threadNum      线程数
 	 * @param splitSize      文件分割大小
 	 */
 	public WordsManager(String fromFilePath, String fromFileFormat, String resultFilePath, String searchParten,
-			String showParten, int threadNum, long splitSize) {
+			String showParten, boolean ignoreGit, int threadNum, long splitSize) {
 		// 确定线程数最小是1个
 		if (threadNum < 1)
 			threadNum = 1;
@@ -153,6 +159,7 @@ public class WordsManager {
 		this.showParten = showParten;
 		this.threadNum = threadNum;
 		this.splitSize = splitSize;
+		this.ignoreGit = ignoreGit;
 		this.currentPos = 0;
 		this.listCalcWordsThreads = new Vector<CalcWordsThread>();
 		this.listThread = new Vector<Thread>();
@@ -190,12 +197,15 @@ public class WordsManager {
 			return false;
 		}
 		String fp = f.getAbsolutePath();
-		String[] pdirs = fp.split(File.separator);
-		ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(pdirs));
-		for (String ig : IGNORE_FILES) {
-			if (arrayList.contains(ig)) {
-				System.out.println("** ignore file " + fp);
-				return false;
+		// 忽略 GIT,SVN等目录
+		if (ignoreGit) {
+			String[] pdirs = fp.split(File.separator);
+			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(pdirs));
+			for (String ig : IGNORE_FILES) {
+				if (arrayList.contains(ig)) {
+					System.out.println("** ignore file " + fp);
+					return false;
+				}
 			}
 		}
 		if (f.isDirectory()) {
