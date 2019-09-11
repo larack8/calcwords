@@ -93,11 +93,11 @@ public class WordsManager {
 	/**
 	 * 按照value进行降序排序
 	 */
-	private Comparator<Map.Entry<String, Integer>> valueDownComparator = new Comparator<Map.Entry<String, Integer>>() {
+	private Comparator<Map.Entry<String, SearchItem>> valueDownComparator = new Comparator<Map.Entry<String, SearchItem>>() {
 		@Override
-		public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
-			// TODO Auto-generated method stub
-			return o2.getValue() - o1.getValue();
+		public int compare(Entry<String, SearchItem> o1, Entry<String, SearchItem> o2) {
+			long countDiff = o2.getValue().count - o1.getValue().count;
+			return (int) countDiff;
 		}
 	};
 
@@ -198,7 +198,7 @@ public class WordsManager {
 		}
 		String fp = f.getAbsolutePath();
 		// 忽略 GIT,SVN等目录
-		if (ignoreGit) {
+		if (!ignoreGit) {
 			String[] pdirs = fp.split(File.separator);
 			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(pdirs));
 			for (String ig : IGNORE_FILES) {
@@ -309,12 +309,12 @@ public class WordsManager {
 		// 当分别统计的线程结束后，开始统计总数目的线程
 		new Thread(() -> {
 
-			TreeMap<String, Integer> tMap = new TreeMap<String, Integer>();
+			TreeMap<String, SearchItem> tMap = new TreeMap<String, SearchItem>();
 
 			// 使用TreeMap保证结果有序（按首字母排序）
 			System.out.println("# 1. 正在按首字母排序... ");
 			for (int loop = 0; loop < listCalcWordsThreads.size(); loop++) {
-				Map<String, Integer> hMap = listCalcWordsThreads.get(loop).getResultMap();
+				Map<String, SearchItem> hMap = listCalcWordsThreads.get(loop).getResultMap();
 				if (null == hMap) {
 					continue;
 				}
@@ -327,7 +327,20 @@ public class WordsManager {
 					if (tMap.get(key) == null) {
 						tMap.put(key, hMap.get(key));
 					} else {
-						tMap.put(key, tMap.get(key) + hMap.get(key));
+						SearchItem titem = tMap.get(key);
+						SearchItem hitem = hMap.get(key);
+						if (null == titem.filePath) {
+							titem.filePath = hitem.filePath;
+						} else if (null != titem.filePath && !titem.filePath.contains(hitem.filePath)) {
+							titem.filePath = titem.filePath + ";" + hitem.filePath;
+						}
+						if (null == titem.fileName) {
+							titem.fileName = hitem.fileName;
+						} else if (null != titem.fileName && !titem.fileName.contains(hitem.fileName)) {
+							titem.fileName = titem.fileName + ";" + hitem.fileName;
+						}
+						titem.count = titem.count + hitem.count;
+						tMap.put(key, titem);
 					}
 				}
 			}
@@ -344,7 +357,7 @@ public class WordsManager {
 			// 使用TreeMap保证结果有序（然后再按查找到的次数递减排序）
 			// map转换成list进行排序
 			System.out.println("# 2. 正在按统计次数排序... ");
-			List<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(tMap.entrySet());
+			List<Map.Entry<String, SearchItem>> list = new ArrayList<Map.Entry<String, SearchItem>>(tMap.entrySet());
 			Collections.sort(list, valueDownComparator);
 
 			System.out.println("# 3. 正在保存到文件... ");
@@ -360,7 +373,7 @@ public class WordsManager {
 		}).start();
 	}
 
-	public void saveResultKVindependent(List<Map.Entry<String, Integer>> list) {
+	public void saveResultKVindependent(List<Map.Entry<String, SearchItem>> list) {
 		String keyFilePath = resultFilePath + "_" + "key.txt";
 		String valueFilePath = resultFilePath + "_" + "value.txt";
 		File keyFile = new File(keyFilePath);
@@ -373,26 +386,32 @@ public class WordsManager {
 		}
 		System.out.println(
 				"## 正在分别保存Key和Value到文件中, Key:" + keyFile.getAbsolutePath() + "; Value:" + valueFile.getAbsolutePath());
-		for (Map.Entry<String, Integer> entry : list) {
+		for (Map.Entry<String, SearchItem> entry : list) {
 			String key = entry.getKey();
-			Integer value = entry.getValue();
+			SearchItem value = entry.getValue();
+			Long count = value.count;
 			saveResultToFile(keyFilePath, key + "\n");
-			saveResultToFile(valueFilePath, String.valueOf(value) + "\n");
+			saveResultToFile(valueFilePath, String.valueOf(count) + "\n");
+//			saveResultToFile(valueFilePath, "filePath: " + item.filePath + "\n");
+//			saveResultToFile(valueFilePath, "count: " + item.count + "\n");
 		}
 	}
 
-	public void saveResultKVtogether(List<Map.Entry<String, Integer>> list) {
+	public void saveResultKVtogether(List<Map.Entry<String, SearchItem>> list) {
 		File fileText = new File(this.resultFilePath);
 		if (fileText.exists()) {
 			fileText.delete();
 		}
 		System.out.println("## 正在保存结果到文件中 " + fileText.getAbsolutePath());
-		for (Map.Entry<String, Integer> entry : list) {
+		for (Map.Entry<String, SearchItem> entry : list) {
 			String key = entry.getKey();
-			Integer value = entry.getValue();
-			String calcResult = "字符:" + key + ",出现次数:" + value + "\n";
+			SearchItem item = entry.getValue();
+			Long count = item.count;
+			String calcResult = "字符:" + key + ",出现次数:" + count + "\n";
 //			System.out.print(calcResult);
 			saveResultToFile(resultFilePath, calcResult);
+			saveResultToFile(resultFilePath, "filePath: " + item.filePath + "\n");
+			saveResultToFile(resultFilePath, "count: " + item.count + "\n");
 		}
 	}
 

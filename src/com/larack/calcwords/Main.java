@@ -16,11 +16,11 @@ public class Main {
 
 	public static void testCalcWords() throws IOException {
 
-		String dir = "E:\\dir\\code";
+		String dir = "src\\com";
 		String fromFilePath = dir;
-		String resultFilePath = dir + "\\result.txt";
+		String resultFilePath = "result.txt";
 
-		calcCustom(fromFilePath, ".txt", resultFilePath, "navigationStyle", null);
+		calcCustom(fromFilePath, ".java", resultFilePath, "calc", null);
 
 //		calcCustom(fromFilePath, resultFilePath,"navigationStyle");
 //		calcLanguageCh(fromFilePath, resultFilePath);// 统计汉字

@@ -19,13 +19,19 @@ import java.util.regex.Pattern;
  */
 public class CalcWordsThread implements Runnable {
 
+	private String filePath = null;
+
+	private String fileName = null;
+
+	private String fileFormat = null;
+
 	private FileChannel fileChannel = null;
 
 	private FileLock lock = null;
 
 	private MappedByteBuffer mbBuf = null;
 
-	private Map<String, Integer> hashMap = null;
+	private Map<String, SearchItem> hashMap = null;
 
 	private String searchParten = "[^a-zA-Z']+";
 
@@ -45,7 +51,12 @@ public class CalcWordsThread implements Runnable {
 		this.searchParten = searchParten;
 		this.showParten = showParten;
 		try {
-			file.getAbsolutePath();
+			filePath = file.getAbsolutePath();
+			String fName = file.getName();
+			fileName = fName.substring(0, fName.lastIndexOf("."));
+			String[] strArray = fName.split("\\.");
+			int suffixIndex = strArray.length - 1;
+			fileFormat = strArray[suffixIndex];
 			// 得到当前文件的通道
 			fileChannel = new RandomAccessFile(file, "rw").getChannel();
 			// 锁定当前文件的部分
@@ -53,7 +64,7 @@ public class CalcWordsThread implements Runnable {
 			// 对当前文件片段建立内存映射，如果文件过大需要切割成多个片段
 			mbBuf = fileChannel.map(FileChannel.MapMode.READ_ONLY, start, size);
 			// 创建HashMap实例存放处理结果
-			hashMap = new HashMap<String, Integer>();
+			hashMap = new HashMap<String, SearchItem>();
 		} catch (Exception e) {
 			System.out.print("Exception when init CalcWordsThread : " + e.getMessage());
 			e.printStackTrace();
@@ -77,10 +88,10 @@ public class CalcWordsThread implements Runnable {
 				Matcher showmatcher = showpattern.matcher(key);
 				if (showmatcher.find()) {
 					String showkey = showmatcher.group();
-					recordWords(showkey);
+					recordWords(showkey, filePath, fileName, fileFormat);
 				}
 			} else {
-				recordWords(key);
+				recordWords(key, filePath, fileName, fileFormat);
 			}
 
 		}
@@ -97,19 +108,26 @@ public class CalcWordsThread implements Runnable {
 		return;
 	}
 
-	private void recordWords(String key) {
+	private void recordWords(String key, String filePath, String fileName, String fileFormat) {
 		if (null == hashMap) {
-			hashMap = new HashMap<String, Integer>();
+			hashMap = new HashMap<String, SearchItem>();
 		}
 		if (hashMap.get(key) == null) {
-			hashMap.put(key, 1);
+			SearchItem item = new SearchItem();
+			item.count = 1l;
+			item.filePath = filePath;
+			item.fileName = fileName;
+			item.fileFormat = fileFormat;
+			hashMap.put(key, item);
 		} else {
-			hashMap.put(key, hashMap.get(key) + 1);
+			SearchItem item = hashMap.get(key);
+			item.count += item.count;
+			hashMap.put(key, item);
 		}
 	}
 
 	// 获取当前线程的执行结果
-	public Map<String, Integer> getResultMap() {
+	public Map<String, SearchItem> getResultMap() {
 		return hashMap;
 	}
 }
